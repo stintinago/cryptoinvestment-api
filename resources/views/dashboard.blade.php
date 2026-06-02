@@ -56,34 +56,44 @@
 
 <canvas id="cryptoChart"></canvas>
 
-<script>
+<h2>Historical Price</h2>
 
-let chart;
+<select id="cryptoSelector"></select>
+
+<canvas id="historyChart"></canvas>
+
+<script>
+const selector = document.getElementById('cryptoSelector');
+
+let cryptoChart;
+let historyChart;
+let currentSymbol = null;
 
 async function loadCryptos()
 {
-    const response =
-        await fetch('/cryptocurrencies');
-
-    const result =
-        await response.json();
-
-    const data =
-        result.data;
+    const response = await fetch('/cryptocurrencies');
+    const result = await response.json();
+    const data = result.data;
 
     renderTable(data);
     renderChart(data);
+
+    if (!currentSymbol && data.length > 0) {
+        currentSymbol = data[0].symbol;
+
+        setTimeout(() => {
+            selector.value = currentSymbol;
+            loadHistory(currentSymbol);
+        }, 0);
+    }
 }
 
 function renderTable(data)
 {
-    const table =
-        document.getElementById('cryptoTable');
-
+    const table = document.getElementById('cryptoTable');
     table.innerHTML = '';
 
     data.forEach(crypto => {
-
         table.innerHTML += `
             <tr>
                 <td>${crypto.name}</td>
@@ -94,32 +104,43 @@ function renderTable(data)
             </tr>
         `;
     });
+
+
+
+    if (selector.options.length === 0) {
+        data.forEach(crypto => {
+            selector.innerHTML += `
+                <option value="${crypto.symbol}">
+                    ${crypto.symbol}
+                </option>
+            `;
+        });
+    }
 }
+
+    selector.addEventListener('change', e => {
+    currentSymbol = e.target.value;
+    loadHistory(currentSymbol);
+});
 
 function renderChart(data)
 {
-    const ctx =
-        document.getElementById('cryptoChart');
+    const ctx = document.getElementById('cryptoChart');
 
-    const labels =
-        data.slice(0,10).map(c => c.symbol);
+    const labels = data.slice(0,10).map(c => c.symbol);
+    const prices = data.slice(0,10).map(c => c.quote.USD.price);
 
-    const prices =
-        data.slice(0,10).map(
-            c => c.quote.USD.price
-        );
-
-    if(chart){
-        chart.destroy();
+    if (cryptoChart) {
+        cryptoChart.destroy();
     }
 
-    chart = new Chart(ctx,{
-        type:'bar',
-        data:{
+    cryptoChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
             labels,
-            datasets:[{
-                label:'Price USD',
-                data:prices
+            datasets: [{
+                label: 'Price USD',
+                data: prices
             }]
         }
     });
@@ -131,7 +152,42 @@ setInterval(
     loadCryptos,
     60000
 );
+async function loadHistory(symbol)
+{
+    try {
+        const response = await fetch(`/crypto-history/${symbol}`);
 
+        if (!response.ok) {
+            console.error('History API error');
+            return;
+        }
+
+        const history = await response.json();
+
+        const labels = history.map(item => item.recorded_at);
+        const prices = history.map(item => item.price);
+
+        const ctx = document.getElementById('historyChart');
+
+        if (historyChart) {
+            historyChart.destroy();
+        }
+
+        historyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: `${symbol} Price History`,
+                    data: prices
+                }]
+            }
+        });
+
+    } catch (err) {
+        console.error('Network error:', err);
+    }
+}
 </script>
 
 </body>

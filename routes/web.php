@@ -17,5 +17,5 @@ Route::get('/sync-crypto', [
 
 Route::get(
     '/crypto-history/{symbol}',
-    [CryptoController::class, 'history'
-]);
+    [CryptoController::class, 'history']
+);
