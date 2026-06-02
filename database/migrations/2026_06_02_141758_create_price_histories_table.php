@@ -13,6 +13,19 @@ return new class extends Migration
     {
         Schema::create('price_histories', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('cryptocurrency_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->decimal('price', 20, 8);
+
+            $table->decimal('percent_change_24h', 10, 2);
+
+            $table->decimal('volume_24h', 20, 2);
+
+            $table->timestamp('recorded_at');
+
             $table->timestamps();
         });
     }
