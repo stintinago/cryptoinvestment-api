@@ -69,4 +69,27 @@ class CryptoController extends Controller
             'message' => 'Cryptocurrency data synchronized'
         ]);
     }
+
+    /**
+     * Returns historical prices for a cryptocurrency.
+     */
+    public function history($symbol)
+    {
+        $crypto = Cryptocurrency::where(
+            'symbol',
+            strtoupper($symbol)
+        )->first();
+
+        if (!$crypto) {
+            return response()->json([
+                'message' => 'Cryptocurrency not found'
+            ], 404);
+        }
+
+        return response()->json(
+            $crypto->priceHistories()
+                ->orderBy('recorded_at')
+                ->get()
+        );
+    }
 }
