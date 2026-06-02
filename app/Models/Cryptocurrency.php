@@ -14,6 +14,8 @@ class Cryptocurrency extends Model
 
     public function priceHistories()
     {
-        return $this->hasMany(PriceHistory::class);
+        return $this->hasMany(
+            PriceHistory::class
+        );
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('name');
-            $table->string('symbol', 20);
+            $table->string('symbol', 20)->unique();
 
             $table->unsignedBigInteger('cmc_id')->unique();
 

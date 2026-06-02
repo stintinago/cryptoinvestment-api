@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Http;
 class CoinMarketCapService
 {
     /**
-     * * Obtains the latest cryptocurrency listings from CoinMarketCap.
+     * Retrieves the latest cryptocurrency market data
+     * from the CoinMarketCap API.
+     *
+     * @return array
      */
     public function getLatestListings()
     {
